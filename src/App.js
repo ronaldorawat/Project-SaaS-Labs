@@ -1,25 +1,67 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import "./index.css";
+const App = () => {
+  const [projects, setProjects] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 5;
 
-function App() {
+  // Fetch data
+  useEffect(() => {
+    fetch(
+      "https://raw.githubusercontent.com/saaslabsco/frontend-assignment/refs/heads/master/frontend-assignment.json"
+    )
+      .then((response) => response.json())
+      .then((data) => setProjects(data))
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
+
+  // Pagination logic
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = projects.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(projects.length / recordsPerPage);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+      <h1>Kickstarter Projects</h1>
+      <table className="projects-table">
+        <thead>
+          <tr>
+            <th>S.No.</th>
+            <th>Percentage Funded</th>
+            <th>Amount Pledged</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentRecords.map((project, index) => (
+            <tr key={index}>
+              <td>{indexOfFirstRecord + index}</td>
+              <td>{Math.round(project["percentage.funded"])}</td>
+              <td>{project["amt.pledged"]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="pagination">
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(currentPage - 1)}
         >
-          Learn React
-        </a>
-      </header>
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage(currentPage + 1)}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
-}
+};
 
 export default App;
